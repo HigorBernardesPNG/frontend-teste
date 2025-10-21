@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { isAxiosError } from 'axios';
 import { listarTiposAtivos, listarTiposInativos, alternarStatusTipo, criarTipo } from '../../api/tipos';
 import type { Tipo } from '../../types';
+import { getHttpErrorMessage } from '../../utils/http';
 
 export default function TiposPage() {
   const [ativos, setAtivos] = useState<Tipo[]>([]);
@@ -12,44 +12,40 @@ export default function TiposPage() {
   const [nome, setNome] = useState('');
 
   async function carregar() {
-    setLoading(true);
-    setErr(null);
+    setLoading(true); setErr(null);
     try {
       const [a, i] = await Promise.all([listarTiposAtivos(), listarTiposInativos()]);
-      setAtivos(a);
-      setInativos(i);
+      setAtivos(a); setInativos(i);
     } catch (e: unknown) {
-      const msg = isAxiosError(e) ? (e.response?.data as any)?.detail ?? e.message : 'Falha ao carregar tipos.';
-      setErr(msg);
+      setErr(getHttpErrorMessage(e));
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    void carregar();
-  }, []);
+  useEffect(() => { void carregar(); }, []);
 
   async function toggle(id: number) {
+    setErr(null);
     try {
       await alternarStatusTipo(id);
       await carregar();
     } catch (e: unknown) {
-      const msg = isAxiosError(e) ? (e.response?.data as any)?.detail ?? e.message : 'Falha ao alternar status.';
-      setErr(msg);
+      setErr(getHttpErrorMessage(e));
     }
   }
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!nome.trim()) return;
+    const n = nome.trim();
+    if (!n) { setErr('Informe o nome do tipo.'); return; }
+    setErr(null);
     try {
-      await criarTipo({ nome });
+      await criarTipo({ nome: n });
       setNome('');
       await carregar();
     } catch (e: unknown) {
-      const msg = isAxiosError(e) ? (e.response?.data as any)?.detail ?? e.message : 'Falha ao criar tipo.';
-      setErr(msg);
+      setErr(getHttpErrorMessage(e));
     }
   }
 
@@ -59,8 +55,8 @@ export default function TiposPage() {
         <h1 className="h4 mb-0">Tipos</h1>
       </div>
 
+      {loading && <div className="alert alert-info">Carregando…</div>}
       {err && <div className="alert alert-danger">{err}</div>}
-      {loading && <div className="alert alert-info">Carregando...</div>}
 
       <div className="card mb-4">
         <div className="card-body">
@@ -87,7 +83,7 @@ export default function TiposPage() {
               {ativos.map((t) => (
                 <li key={t.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div className="fw-medium">{t.nome}</div>
-                  <button className="btn btn-outline-danger btn-sm" onClick={() => toggle(t.id)}>
+                  <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(t.id)}>
                     Desativar
                   </button>
                 </li>
@@ -104,7 +100,7 @@ export default function TiposPage() {
               {inativos.map((t) => (
                 <li key={t.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div className="fw-medium">{t.nome}</div>
-                  <button className="btn btn-outline-success btn-sm" onClick={() => toggle(t.id)}>
+                  <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(t.id)}>
                     Ativar
                   </button>
                 </li>

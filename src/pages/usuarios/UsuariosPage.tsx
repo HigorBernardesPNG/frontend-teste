@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { isAxiosError } from 'axios';
 import { listarUsuariosAtivos, listarUsuariosInativos, alternarStatusUsuario, criarUsuario } from '../../api/usuarios';
 import type { Usuario } from '../../types';
+import { getHttpErrorMessage } from '../../utils/http';
 
 export default function UsuariosPage() {
   const [ativos, setAtivos] = useState<Usuario[]>([]);
@@ -11,6 +11,7 @@ export default function UsuariosPage() {
 
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
 
   async function carregar() {
     setLoading(true); setErr(null);
@@ -18,33 +19,35 @@ export default function UsuariosPage() {
       const [a, i] = await Promise.all([listarUsuariosAtivos(), listarUsuariosInativos()]);
       setAtivos(a); setInativos(i);
     } catch (e: unknown) {
-      const msg = isAxiosError(e) ? (e.response?.data as any)?.detail ?? e.message : 'Falha ao carregar usuários.';
-      setErr(msg);
+      setErr(getHttpErrorMessage(e));
     } finally { setLoading(false); }
   }
 
   useEffect(() => { void carregar(); }, []);
 
   async function toggle(id: number) {
+    setErr(null);
     try {
       await alternarStatusUsuario(id);
       await carregar();
     } catch (e: unknown) {
-      const msg = isAxiosError(e) ? (e.response?.data as any)?.detail ?? e.message : 'Falha ao alternar status.';
-      setErr(msg);
+      setErr(getHttpErrorMessage(e));
     }
   }
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!nome.trim() || !email.trim()) return;
+    const n = nome.trim();
+    const m = email.trim();
+    const s = senha.trim();
+    if (!n || !m || !s) { setErr('Preencha nome, email e senha.'); return; }
+    setErr(null);
     try {
-      await criarUsuario({ nome, email });
-      setNome(''); setEmail('');
+      await criarUsuario({ nome: n, email: m, senha: s });
+      setNome(''); setEmail(''); setSenha('');
       await carregar();
     } catch (e: unknown) {
-      const msg = isAxiosError(e) ? (e.response?.data as any)?.detail ?? e.message : 'Falha ao criar usuário.';
-      setErr(msg);
+      setErr(getHttpErrorMessage(e));
     }
   }
 
@@ -54,22 +57,26 @@ export default function UsuariosPage() {
         <h1 className="h4 mb-0">Usuários</h1>
       </div>
 
-      {err && <div className="alert alert-danger">{err}</div>}
       {loading && <div className="alert alert-info">Carregando…</div>}
+      {err && <div className="alert alert-danger">{err}</div>}
 
       <div className="card mb-4">
         <div className="card-body">
           <form className="row g-3 align-items-end" onSubmit={onCreate}>
-            <div className="col-md-5">
+            <div className="col-md-4">
               <label className="form-label">Nome</label>
               <input className="form-control" value={nome} onChange={(e) => setNome(e.target.value)} />
             </div>
-            <div className="col-md-5">
+            <div className="col-md-4">
               <label className="form-label">Email</label>
               <input type="email" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            <div className="col-md-2">
-              <button className="btn btn-primary w-100">
+            <div className="col-md-3">{/* NOVO */}
+              <label className="form-label">Senha</label>
+              <input type="password" className="form-control" value={senha} onChange={(e) => setSenha(e.target.value)} />
+            </div>
+            <div className="col-md-1 d-grid">
+              <button className="btn btn-primary">
                 <i className="bi bi-person-plus me-2" />
                 Criar
               </button>
@@ -92,7 +99,7 @@ export default function UsuariosPage() {
                     <div className="fw-medium">{u.nome}</div>
                     <small className="text-muted">{u.email}</small>
                   </div>
-                  <button className="btn btn-outline-danger btn-sm" onClick={() => toggle(u.id)}>
+                  <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(u.id)}>
                     Desativar
                   </button>
                 </li>
@@ -112,7 +119,7 @@ export default function UsuariosPage() {
               {inativos.map((u) => (
                 <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div className="fw-medium">{u.nome}</div>
-                  <button className="btn btn-outline-success btn-sm" onClick={() => toggle(u.id)}>
+                  <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(u.id)}>
                     Ativar
                   </button>
                 </li>
