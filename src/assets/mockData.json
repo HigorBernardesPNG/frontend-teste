@@ -1,0 +1,16 @@
+{
+  "periodo": { "inicio": "2024-01", "fim": "2024-12", "granularidade": "mensal" },
+  "series": {
+    "total": [10,12,13,15,17,20,22,23,25,27,28,30],
+    "ativos": [8,9,10,12,13,15,16,17,18,19,20,21],
+    "inativos": [2,3,3,3,4,5,6,6,7,8,8,9],
+    "novos": [2,2,1,2,2,3,2,1,2,2,1,2],
+    "delta": [0,2,1,2,2,3,2,1,2,2,1,2]
+  },
+  "statusDistribuicao": { "ativos": 70, "inativos": 30 },
+  "tipos": [
+    { "nome": "Cliente", "ativos": 40, "inativos": 10, "crescimento": 12 },
+    { "nome": "Fornecedor", "ativos": 15, "inativos": 5, "crescimento": 6 },
+    { "nome": "Parceiro", "ativos": 10, "inativos": 3, "crescimento": 4 }
+  ]
+}
