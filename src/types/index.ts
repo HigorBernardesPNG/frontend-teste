@@ -17,6 +17,7 @@ export type Contato = {
   nome: string;
   valor: string;
   idtipo: number;
+  
   idusuario: number;
   ativo: boolean;
 };
