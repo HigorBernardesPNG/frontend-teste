@@ -1,52 +1,14 @@
-import { useEffect, useState } from 'react';
-import { listarTiposAtivos, listarTiposInativos, alternarStatusTipo, criarTipo } from '../../api/tipos';
-import type { Tipo } from '../../types';
-import { getHttpErrorMessage } from '../../utils/http';
+import { useState } from 'react';
+import { useTipos } from './UseTipos';
 
 export default function TiposPage() {
-  const [ativos, setAtivos] = useState<Tipo[]>([]);
-  const [inativos, setInativos] = useState<Tipo[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
+  const { ativos, inativos, loading, err, create, toggle, setErr } = useTipos();
   const [nome, setNome] = useState('');
-
-  async function carregar() {
-    setLoading(true); setErr(null);
-    try {
-      const [a, i] = await Promise.all([listarTiposAtivos(), listarTiposInativos()]);
-      setAtivos(a); setInativos(i);
-    } catch (e: unknown) {
-      setErr(getHttpErrorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { void carregar(); }, []);
-
-  async function toggle(id: number) {
-    setErr(null);
-    try {
-      await alternarStatusTipo(id);
-      await carregar();
-    } catch (e: unknown) {
-      setErr(getHttpErrorMessage(e));
-    }
-  }
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-    const n = nome.trim();
-    if (!n) { setErr('Informe o nome do tipo.'); return; }
-    setErr(null);
-    try {
-      await criarTipo({ nome: n });
-      setNome('');
-      await carregar();
-    } catch (e: unknown) {
-      setErr(getHttpErrorMessage(e));
-    }
+    const ok = await create({ nome: nome.trim() });
+    if (ok) setNome('');
   }
 
   return (
@@ -63,7 +25,14 @@ export default function TiposPage() {
           <form className="row g-3" onSubmit={onCreate}>
             <div className="col-md-8">
               <label className="form-label">Nome</label>
-              <input className="form-control" value={nome} onChange={(e) => setNome(e.target.value)} />
+              <input
+                className="form-control"
+                value={nome}
+                onChange={(e) => {
+                  setErr(null);
+                  setNome(e.target.value);
+                }}
+              />
             </div>
             <div className="col-md-4 d-flex align-items-end">
               <button className="btn btn-primary">
@@ -82,10 +51,7 @@ export default function TiposPage() {
             <ul className="list-group list-group-flush">
               {ativos.map((t) => (
                 <li key={t.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <span className="fw-medium">{(t as any).nome ?? (t as any).descricao}</span>
-                    <small className="text-muted ms-2">ID #{t.id}</small>
-                  </div>
+                  <div className="fw-medium">{t.nome} <small className="text-muted"># {t.id}</small></div>
                   <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(t.id)}>
                     Desativar
                   </button>
@@ -102,10 +68,7 @@ export default function TiposPage() {
             <ul className="list-group list-group-flush">
               {inativos.map((t) => (
                 <li key={t.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <span className="fw-medium">{(t as any).nome ?? (t as any).descricao}</span>
-                    <small className="text-muted ms-2">ID #{t.id}</small>
-                  </div>
+                  <div className="fw-medium">{t.nome} <small className="text-muted"># {t.id}</small></div>
                   <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(t.id)}>
                     Ativar
                   </button>

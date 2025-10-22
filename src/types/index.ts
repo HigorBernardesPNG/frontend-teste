@@ -1,5 +1,6 @@
 export type Tipo = {
   id: number;
+  nome: string;
   descricao: string;
   ativo: boolean;
 };

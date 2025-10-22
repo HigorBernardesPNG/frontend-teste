@@ -1,92 +1,25 @@
-import { useEffect, useState } from 'react';
-import {
-  listarContatosAtivos,
-  listarContatosInativos,
-  criarContato,
-  alternarStatusContato,
-} from '../../api/contatos';
-import type { Contato } from '../../types';
-import { getHttpErrorMessage } from '../../utils/http';
+import { useState } from 'react';
+import { useContatos } from './useContatos';
 
 export default function ContatosPage() {
-  // Campos do formulário
+  // hook da página
+  const { ativos, inativos, loading, err, create, toggle, setErr } = useContatos();
+
+  // estado do formulário
   const [nome, setNome] = useState('');
   const [valor, setValor] = useState('');
-  const [tipoId, setTipoId] = useState<string>('');
-  const [usuarioId, setUsuarioId] = useState<string>('');
-
-  // Listas
-  const [ativos, setAtivos] = useState<Contato[]>([]);
-  const [inativos, setInativos] = useState<Contato[]>([]);
-
-  // UI
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  async function carregar() {
-    setLoading(true);
-    setErr(null);
-    try {
-      // As funções já tratam 404 como lista vazia (via getWithFallback)
-      const [a, i] = await Promise.all([
-        listarContatosAtivos(),
-        listarContatosInativos(),
-      ]);
-      setAtivos(a);
-      setInativos(i);
-    } catch (e: unknown) {
-      setErr(getHttpErrorMessage(e));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void carregar();
-  }, []);
-
-  async function toggle(id: number) {
-    setErr(null);
-    try {
-      await alternarStatusContato(id);
-      await carregar();
-    } catch (e: unknown) {
-      setErr(getHttpErrorMessage(e));
-    }
-  }
+  const [tipoId, setTipoId] = useState<string>('');     // string
+  const [usuarioId, setUsuarioId] = useState<string>(''); // string
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
-
-    const n = nome.trim();
-    const v = valor.trim();
-    const t = Number(tipoId);
-    const u = Number(usuarioId);
-
-    // Validações simples antes do POST
-    if (!n || !v || !t || !u) {
-      setErr('Preencha nome, valor, tipo (ID numérico) e usuário (ID numérico).');
-      return;
-    }
-
-    setErr(null);
-    try {
-      await criarContato({
-        idtipo: t,
-        idusuario: u,
-        nome: n,
-        valor: v,
-      });
-      // limpa form
-      setNome('');
-      setValor('');
-      setTipoId('');
-      setUsuarioId('');
-      // recarrega as listas
-      await carregar();
-    } catch (e: unknown) {
-      setErr(getHttpErrorMessage(e));
-    }
+    const ok = await create({
+      nome: nome.trim(),
+      valor: valor.trim(),
+      idtipo: Number(tipoId),
+      idusuario: Number(usuarioId),
+    });
+    if (ok) { setNome(''); setValor(''); setTipoId(''); setUsuarioId(''); }
   }
 
   return (
@@ -109,7 +42,7 @@ export default function ContatosPage() {
                 className="form-control"
                 placeholder="Ex.: WhatsApp"
                 value={nome}
-                onChange={(e) => setNome(e.target.value)}
+                onChange={(e) => { setErr(null); setNome(e.target.value); }}
               />
             </div>
             <div className="col-md-6">
@@ -118,7 +51,7 @@ export default function ContatosPage() {
                 className="form-control"
                 placeholder="Ex.: +55 11 90000-0000"
                 value={valor}
-                onChange={(e) => setValor(e.target.value)}
+                onChange={(e) => { setErr(null); setValor(e.target.value); }}
               />
             </div>
             <div className="col-md-6">
@@ -127,7 +60,7 @@ export default function ContatosPage() {
                 className="form-control"
                 placeholder="Informe o ID de um tipo existente."
                 value={tipoId}
-                onChange={(e) => setTipoId(e.target.value)}
+                onChange={(e) => { setErr(null); setTipoId(e.target.value); }}
               />
             </div>
             <div className="col-md-6">
@@ -136,7 +69,7 @@ export default function ContatosPage() {
                 className="form-control"
                 placeholder="Informe o ID de um usuário existente."
                 value={usuarioId}
-                onChange={(e) => setUsuarioId(e.target.value)}
+                onChange={(e) => { setErr(null); setUsuarioId(e.target.value); }}
               />
             </div>
             <div className="col-12 d-flex justify-content-end">
@@ -158,23 +91,14 @@ export default function ContatosPage() {
               <span className="badge text-bg-success">{ativos.length}</span>
             </div>
             <ul className="list-group list-group-flush">
-              {ativos.length === 0 && (
-                <li className="list-group-item text-muted">Nenhum ativo.</li>
-              )}
+              {!ativos.length && <li className="list-group-item text-muted">Nenhum ativo.</li>}
               {ativos.map((c) => (
-                <li
-                  key={c.id}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
+                <li key={c.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div>
-                    {/* Mostra nome e valor do contato; se sua API retornar outros campos, ajuste aqui */}
-                    <div className="fw-medium">{c.nome}</div>
+                    <div className="fw-medium">{c.nome} <small className="text-muted"># {c.id}</small></div>
                     <small className="text-muted">Valor: {c.valor}</small>
                   </div>
-                  <button
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => void toggle(c.id)}
-                  >
+                  <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(c.id)}>
                     Desativar
                   </button>
                 </li>
@@ -190,19 +114,11 @@ export default function ContatosPage() {
               <span className="badge text-bg-secondary">{inativos.length}</span>
             </div>
             <ul className="list-group list-group-flush">
-              {inativos.length === 0 && (
-                <li className="list-group-item text-muted">Nenhum inativo.</li>
-              )}
+              {!inativos.length && <li className="list-group-item text-muted">Nenhum inativo.</li>}
               {inativos.map((c) => (
-                <li
-                  key={c.id}
-                  className="list-group-item d-flex justify-content-between align-items-center"
-                >
-                  <div className="fw-medium">{c.nome}</div>
-                  <button
-                    className="btn btn-outline-success btn-sm"
-                    onClick={() => void toggle(c.id)}
-                  >
+                <li key={c.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <div className="fw-medium">{c.nome} <small className="text-muted"># {c.id}</small></div>
+                  <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(c.id)}>
                     Ativar
                   </button>
                 </li>
