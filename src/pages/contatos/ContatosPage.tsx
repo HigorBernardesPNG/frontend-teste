@@ -1,14 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useContatos } from './useContatos';
+import { useAlert } from '../../context/AlertContext';
 
 export default function ContatosPage() {
   // hook da página
   const { ativos, inativos, loading, err, create, toggle, setErr } = useContatos();
 
+  // alerts globais
+  const { success, danger } = useAlert();
+
+  // dedupe de erro (evita duplicar em StrictMode e repetições do mesmo texto)
+  const lastErrRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (err && lastErrRef.current !== err) {
+      danger(err);
+      lastErrRef.current = err;
+    }
+  }, [err, danger]);
+
   // estado do formulário
   const [nome, setNome] = useState('');
   const [valor, setValor] = useState('');
-  const [tipoId, setTipoId] = useState<string>('');     // string
+  const [tipoId, setTipoId] = useState<string>('');       // string
   const [usuarioId, setUsuarioId] = useState<string>(''); // string
 
   async function onCreate(e: React.FormEvent) {
@@ -19,7 +32,10 @@ export default function ContatosPage() {
       idtipo: Number(tipoId),
       idusuario: Number(usuarioId),
     });
-    if (ok) { setNome(''); setValor(''); setTipoId(''); setUsuarioId(''); }
+    if (ok) {
+      setNome(''); setValor(''); setTipoId(''); setUsuarioId('');
+      success('Contato criado com sucesso.', { title: 'Tudo certo!', autoDismiss: 3000 });
+    }
   }
 
   return (
@@ -29,7 +45,7 @@ export default function ContatosPage() {
       </div>
 
       {loading && <div className="alert alert-info">Carregando…</div>}
-      {err && <div className="alert alert-danger">{err}</div>}
+      {/* removido o erro inline: o erro agora aparece apenas no alerta global */}
 
       {/* Novo contato */}
       <div className="card mb-4">
@@ -98,7 +114,10 @@ export default function ContatosPage() {
                     <div className="fw-medium">{c.nome} <small className="text-muted"># {c.id}</small></div>
                     <small className="text-muted">Valor: {c.valor}</small>
                   </div>
-                  <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(c.id)}>
+                  <button
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={async () => { await toggle(c.id); success('Status atualizado.', { autoDismiss: 2500 }); }}
+                  >
                     Desativar
                   </button>
                 </li>
@@ -118,7 +137,10 @@ export default function ContatosPage() {
               {inativos.map((c) => (
                 <li key={c.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div className="fw-medium">{c.nome} <small className="text-muted"># {c.id}</small></div>
-                  <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(c.id)}>
+                  <button
+                    className="btn btn-outline-success btn-sm"
+                    onClick={async () => { await toggle(c.id); success('Status atualizado.', { autoDismiss: 2500 }); }}
+                  >
                     Ativar
                   </button>
                 </li>

@@ -1,10 +1,18 @@
 import AppRouter from './router/AppRouter';
 import { AuthProvider } from './auth/AuthContext';
 
+// ALERT: imports adicionados para mensageria global
+import { AlertProvider } from './context/AlertContext';
+import { AlertHost } from './components/AlertHost';
+
 export default function App() {
   return (
-    <AuthProvider>
-      <AppRouter />
-    </AuthProvider>
+
+    <AlertProvider>
+      <AuthProvider>
+        <AppRouter />
+        <AlertHost />
+      </AuthProvider>
+    </AlertProvider>
   );
 }
