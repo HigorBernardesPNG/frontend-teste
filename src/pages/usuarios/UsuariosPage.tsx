@@ -96,7 +96,10 @@ export default function UsuariosPage() {
               {ativos.map((u) => (
                 <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div>
-                    <div className="fw-medium">{u.nome}</div>
+                    {/* Nome + ID visível */}
+                    <div className="fw-medium">
+                      {u.nome} <small className="text-muted">ID #{u.id}</small>
+                    </div>
                     <small className="text-muted">{u.email}</small>
                   </div>
                   <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(u.id)}>
@@ -118,7 +121,10 @@ export default function UsuariosPage() {
             <ul className="list-group list-group-flush">
               {inativos.map((u) => (
                 <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div className="fw-medium">{u.nome}</div>
+                  {/* Nome + ID visível */}
+                  <div className="fw-medium">
+                    {u.nome} <small className="text-muted">ID #{u.id}</small>
+                  </div>
                   <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(u.id)}>
                     Ativar
                   </button>

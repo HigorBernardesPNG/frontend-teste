@@ -82,7 +82,10 @@ export default function TiposPage() {
             <ul className="list-group list-group-flush">
               {ativos.map((t) => (
                 <li key={t.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div className="fw-medium">{t.nome}</div>
+                  <div>
+                    <span className="fw-medium">{(t as any).nome ?? (t as any).descricao}</span>
+                    <small className="text-muted ms-2">ID #{t.id}</small>
+                  </div>
                   <button className="btn btn-outline-danger btn-sm" onClick={() => void toggle(t.id)}>
                     Desativar
                   </button>
@@ -99,7 +102,10 @@ export default function TiposPage() {
             <ul className="list-group list-group-flush">
               {inativos.map((t) => (
                 <li key={t.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div className="fw-medium">{t.nome}</div>
+                  <div>
+                    <span className="fw-medium">{(t as any).nome ?? (t as any).descricao}</span>
+                    <small className="text-muted ms-2">ID #{t.id}</small>
+                  </div>
                   <button className="btn btn-outline-success btn-sm" onClick={() => void toggle(t.id)}>
                     Ativar
                   </button>
