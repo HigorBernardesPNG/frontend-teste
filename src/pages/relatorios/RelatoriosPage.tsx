@@ -3,6 +3,7 @@ import { Line, Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, LineElement, PointElement, CategoryScale, LinearScale, ArcElement, BarElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, ArcElement, BarElement, Tooltip, Legend);
 
+
 export default function RelatoriosPage(){
   const labels = Array.from({length: 12}, (_,i)=>`${(i+1).toString().padStart(2,'0')}/24`);
 

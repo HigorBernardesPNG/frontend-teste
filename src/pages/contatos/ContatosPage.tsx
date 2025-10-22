@@ -56,7 +56,7 @@ export default function ContatosPage() {
               <label className="form-label">Nome</label>
               <input
                 className="form-control"
-                placeholder="Ex.: WhatsApp"
+                placeholder="Ex.: WhatsApp ou endereço"
                 value={nome}
                 onChange={(e) => { setErr(null); setNome(e.target.value); }}
               />
@@ -65,7 +65,7 @@ export default function ContatosPage() {
               <label className="form-label">Valor</label>
               <input
                 className="form-control"
-                placeholder="Ex.: +55 11 90000-0000"
+                placeholder="Ex.: Telefone para contato ou endereço"
                 value={valor}
                 onChange={(e) => { setErr(null); setValor(e.target.value); }}
               />
