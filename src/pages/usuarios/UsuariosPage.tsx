@@ -61,6 +61,7 @@ export default function UsuariosPage() {
               {ativos.map((u) => (
                 <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center">
                   <div className="fw-medium">{u.nome} <small className="text-muted"># {u.id}</small></div>
+                  <small className="text-muted">E-mail: {u.email}</small>
                   <button
                     className="btn btn-outline-danger btn-sm"
                     onClick={async () => { await toggle(u.id); success('Status atualizado.', { autoDismiss: 2500 }); }}
