@@ -29,9 +29,6 @@ Crie um arquivo `.env` na raiz (ou use `.env.local`) com a URL base da API:
 VITE_API_URL=https://<sua-base-da-api>
 ```
 
-> Dica: inclua um `.env.example` no repositório com a mesma chave e um valor fictício.  
-> **Nunca** versione `.env` reais.
-
 ---
 
 ## 4) Instalação
@@ -91,13 +88,15 @@ npm run preview
 
 ```
 src/
-  api/           # serviços HTTP (Axios)
-  components/    # componentes reutilizáveis
-  pages/         # páginas/rotas
-  router/        # react-router
-  styles/        # estilos globais (Bootstrap importado aqui)
-  types/         # tipos/DTOs
-  utils/         # utilitários
+  api/             # instância Axios + serviços de domínio
+  auth/            # contexto de autenticação (token) e rotas protegidas
+  components/      # componentes reutilizáveis (ex.: AlertHost)
+  context/         # providers globais (ex.: AlertProvider)
+  hooks/           # hooks compartilhados (ex.: useActiveInactive)
+  pages/           # Login, Usuarios, Tipos, Contatos, Relatorios
+  router/          # AppRouter (react-router-dom)
+  assets/          # mockData.json (relatórios) e estáticos
+  chart/           # tema Chart.js (cores)
 ```
 
 ---
