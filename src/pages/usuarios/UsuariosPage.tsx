@@ -60,8 +60,10 @@ export default function UsuariosPage() {
             <ul className="list-group list-group-flush">
               {ativos.map((u) => (
                 <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div className="fw-medium">{u.nome} <small className="text-muted"># {u.id}</small></div>
-                  <small className="text-muted">E-mail: {u.email}</small>
+                  <div>
+                    <div className="fw-medium">{u.nome} <small className="text-muted"># {u.id}</small></div>
+                    <small className="text-muted">E-mail: {u.email}</small>
+                  </div>
                   <button
                     className="btn btn-outline-danger btn-sm"
                     onClick={async () => { await toggle(u.id); success('Status atualizado.', { autoDismiss: 2500 }); }}
@@ -84,7 +86,10 @@ export default function UsuariosPage() {
             <ul className="list-group list-group-flush">
               {inativos.map((u) => (
                 <li key={u.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div className="fw-medium">{u.nome} <small className="text-muted"># {u.id}</small></div>
+                  <div>
+                    <div className="fw-medium">{u.nome} <small className="text-muted"># {u.id}</small></div>
+                    <small className="text-muted">E-mail: {u.email}</small>
+                  </div>
                   <button
                     className="btn btn-outline-success btn-sm"
                     onClick={async () => { await toggle(u.id); success('Status atualizado.', { autoDismiss: 2500 }); }}

@@ -136,7 +136,10 @@ export default function ContatosPage() {
               {!inativos.length && <li className="list-group-item text-muted">Nenhum inativo.</li>}
               {inativos.map((c) => (
                 <li key={c.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div className="fw-medium">{c.nome} <small className="text-muted"># {c.id}</small></div>
+                  <div>
+                    <div className="fw-medium">{c.nome} <small className="text-muted"># {c.id}</small></div>
+                    <small className="text-muted">Valor: {c.valor}</small>
+                  </div>
                   <button
                     className="btn btn-outline-success btn-sm"
                     onClick={async () => { await toggle(c.id); success('Status atualizado.', { autoDismiss: 2500 }); }}
