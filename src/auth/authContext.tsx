@@ -1,59 +1,45 @@
-import { createContext, useMemo, useState, type ReactNode } from 'react';
-import { login as doLogin } from '../api/auth';
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { api } from "../api/api";
 
-export type AuthContextType = {
+type AuthContextValue = {
   token: string | null;
-  login: (u: string, p: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  isAuthenticated: boolean;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('auth_token'));
+export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
 
+  // mantém localStorage em sincronia
+  useEffect(() => {
+    if (token) localStorage.setItem("token", token);
+    else localStorage.removeItem("token");
+  }, [token]);
+
+  // login padrão da API do teste. 
   async function login(username: string, password: string) {
-    const data = await doLogin({ username, password });
-
-    // Aceitar várias formas de retorno
-    const raw = data as any;
-    const access: string | undefined =
-      raw?.access ??
-      raw?.access_token ??
-      raw?.token ??
-      raw?.jwt;
-
-    const tokenType: string = (raw?.token_type ?? 'Bearer') as string;
-
-    if (!access) {
-      throw new Error('Resposta da API não contém token de acesso.');
+    try {
+      const r = await api.post("/token/", { username, password });
+      setToken(r.data?.access_token || r.data?.token || "");
+      return;
+    } catch {
+      const r2 = await api.post("/token", { username, password });
+      setToken(r2.data?.access_token || r2.data?.token || "");
     }
-
-    // Persistir token e tipo
-    localStorage.setItem('auth_token', access);
-    localStorage.setItem('auth_token_type', tokenType);
-
-    setToken(access);
-    window.location.href = '/usuarios';
   }
 
   function logout() {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_token_type');
     setToken(null);
-    window.location.href = '/login';
   }
 
-  const value = useMemo(
-    () => ({
-      token,
-      login,
-      logout,
-      isAuthenticated: !!token,
-    }),
-    [token]
-  );
-
+  const value = useMemo<AuthContextValue>(() => ({ token, login, logout }), [token]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export function useAuthContext() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuthContext precisa estar dentro de <AuthProvider>.");
+  return ctx;
 }
