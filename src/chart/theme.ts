@@ -13,8 +13,10 @@ import {
   ChartType,
 } from 'chart.js';
 
+// Registros padrão (sem isso gráficos não renderizam no Chart.js 3+)
 Chart.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Tooltip, Legend, Filler);
 
+// Paleta baseada nas cores do Bootstrap (pode ajustar à vontade)
 const PALETTE = [
   '#0d6efd', // primary
   '#198754', // success
